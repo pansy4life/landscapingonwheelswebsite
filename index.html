@@ -13,9 +13,24 @@
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
-    const gravity = 0.5, friction = 0.8;
-    const player = { x: 50, y: 0, width: 40, height: 40, color: "red", velX: 0, velY: 0, speed: 3, jumping: false };
+
+    const gravity = 0.5;
+    const friction = 0.8;
+
+    const player = {
+      x: 50,
+      y: 0,
+      width: 40,
+      height: 40,
+      color: "red",
+      velX: 0,
+      velY: 0,
+      speed: 3,
+      jumping: false
+    };
+
     const keys = {};
+
     const platforms = [
       { x: 0, y: 380, width: 800, height: 20 },
       { x: 100, y: 300, width: 100, height: 10 },
@@ -23,35 +38,34 @@
       { x: 400, y: 200, width: 100, height: 10 },
       { x: 600, y: 150, width: 100, height: 10 }
     ];
+
     window.addEventListener("keydown", e => keys[e.code] = true);
     window.addEventListener("keyup", e => keys[e.code] = false);
 
     function update() {
+      // Horizontal input
       if (keys["ArrowRight"] && player.velX < player.speed) player.velX++;
       if (keys["ArrowLeft"] && player.velX > -player.speed) player.velX--;
+
+      // Jumping
       if (keys["ArrowUp"] && !player.jumping) {
         player.velY = -10;
         player.jumping = true;
       }
 
+      // Apply physics
       player.velX *= friction;
       player.velY += gravity;
+
       player.x += player.velX;
       player.y += player.velY;
 
-      for (let p of platforms) {
-        if (player.x < p.x + p.width &&
-            player.x + player.width > p.x &&
-            player.y < p.y + p.height &&
-            player.y + player.height > p.y) {
-          if (player.velY >= 0) {
-            player.y = p.y - player.height;
-            player.velY = 0;
-            player.jumping = false;
-          }
-        }
+      // Collision with platforms
+      for (let platform of platforms) {
+        checkCollision(player, platform);
       }
 
+      // Boundaries
       if (player.x < 0) player.x = 0;
       if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
       if (player.y > canvas.height) {
@@ -60,20 +74,81 @@
       }
     }
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-      ctx.fillStyle = "#654321";
-      for (let p of platforms) ctx.fillRect(p.x, p.y, p.width, p.height);
+    function checkCollision(player, platform) {
+      const px = player.x;
+      const py = player.y;
+      const pw = player.width;
+      const ph = player.height;
+      const vx = player.velX;
+      const vy = player.velY;
+
+      const bx = platform.x;
+      const by = platform.y;
+      const bw = platform.width;
+      const bh = platform.height;
+
+      if (
+        px < bx + bw &&
+        px + pw > bx &&
+        py < by + bh &&
+        py + ph > by
+      ) {
+        const overlapX = (px + pw / 2) - (bx + bw / 2);
+        const overlapY = (py + ph / 2) - (by + bh / 2);
+        const halfWidths = (pw + bw) / 2;
+        const halfHeights = (ph + bh) / 2;
+
+        if (Math.abs(overlapX) < halfWidths && Math.abs(overlapY) < halfHeights) {
+          const offsetX = halfWidths - Math.abs(overlapX);
+          const offsetY = halfHeights - Math.abs(overlapY);
+
+          if (offsetX < offsetY) {
+            // Horizontal collision
+            if (overlapX > 0) {
+              player.x += offsetX;
+            } else {
+              player.x -= offsetX;
+            }
+            player.velX = 0;
+          } else {
+            // Vertical collision
+            if (overlapY > 0) {
+              // Hit from below
+              player.y += offsetY;
+              player.velY = 0;
+            } else {
+              // Landed on top
+              player.y -= offsetY;
+              player.velY = 0;
+              player.jumping = false;
+            }
+          }
+        }
+      }
     }
 
-    function loop() {
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw player
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Draw platforms
+      ctx.fillStyle = "#654321";
+      for (let platform of platforms) {
+        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+      }
+    }
+
+    function gameLoop() {
       update();
       draw();
-      requestAnimationFrame(loop);
+      requestAnimationFrame(gameLoop);
     }
-    loop();
+
+    gameLoop();
   </script>
 </body>
 </html>
+
