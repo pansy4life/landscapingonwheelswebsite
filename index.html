@@ -2,9 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Responsive Web Interface</title>
+  <title>Responsive UI with Sidebar & Dark Mode</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --header-bg: #333;
+      --button-bg: #008CBA;
+      --button-hover: #005f79;
+      --sidebar-bg: #f4f4f4;
+    }
+
+    body.dark-mode {
+      --bg-color: #1e1e1e;
+      --text-color: #ffffff;
+      --header-bg: #111;
+      --button-bg: #444;
+      --button-hover: #666;
+      --sidebar-bg: #2e2e2e;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,11 +32,13 @@
     html, body {
       height: 100%;
       font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
     }
 
-    /* Top Menu Bar */
     header {
-      background-color: #333;
+      background-color: var(--header-bg);
       color: white;
       padding: 1rem;
       display: flex;
@@ -30,32 +50,49 @@
       font-size: 1.2rem;
     }
 
-    nav button {
-      background: #555;
+    nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    nav button, #darkModeToggle {
+      background: var(--button-bg);
       color: white;
       border: none;
       padding: 0.5rem 1rem;
-      margin-left: 0.5rem;
-      cursor: pointer;
       border-radius: 4px;
+      cursor: pointer;
     }
 
-    nav button:hover {
-      background: #777;
+    nav button:hover, #darkModeToggle:hover {
+      background: var(--button-hover);
     }
 
-    /* Layout */
+    /* Hamburger button (mobile) */
+    .hamburger {
+      display: none;
+      font-size: 1.5rem;
+      background: none;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
     .container {
       display: flex;
-      flex-direction: row;
-      height: calc(100% - 60px); /* subtract header height */
+      height: calc(100% - 60px);
     }
 
     aside {
-      background: #f4f4f4;
+      background: var(--sidebar-bg);
       padding: 1rem;
       width: 250px;
       min-width: 200px;
+      transition: transform 0.3s;
+    }
+
+    aside.hidden {
+      transform: translateX(-100%);
     }
 
     main {
@@ -64,18 +101,6 @@
       overflow: auto;
     }
 
-    /* Responsive behavior */
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-
-      aside {
-        width: 100%;
-      }
-    }
-
-    /* Example buttons */
     .button-group {
       display: flex;
       flex-direction: column;
@@ -86,14 +111,37 @@
       padding: 10px;
       font-size: 1rem;
       border: none;
-      background: #008CBA;
+      background: var(--button-bg);
       color: white;
       border-radius: 4px;
       cursor: pointer;
     }
 
     .button-group button:hover {
-      background: #005f79;
+      background: var(--button-hover);
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        display: none;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      aside {
+        position: absolute;
+        z-index: 100;
+        top: 60px;
+        left: 0;
+        height: calc(100% - 60px);
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+      }
     }
   </style>
 </head>
@@ -101,28 +149,52 @@
 
   <header>
     <div class="menu-title">My Responsive Interface</div>
-    <nav>
+    <nav id="menuNav">
       <button onclick="alert('Home clicked')">Home</button>
       <button onclick="alert('About clicked')">About</button>
       <button onclick="alert('Contact clicked')">Contact</button>
+      <button id="darkModeToggle">🌙</button>
     </nav>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
   </header>
 
   <div class="container">
-    <aside>
+    <aside id="sidebar">
       <h2>Controls</h2>
       <div class="button-group">
-        <button onclick="alert('Button 1 clicked')">Button 1</button>
-        <button onclick="alert('Button 2 clicked')">Button 2</button>
-        <button onclick="alert('Button 3 clicked')">Button 3</button>
+        <button onclick="alert('Button 1')">Button 1</button>
+        <button onclick="alert('Button 2')">Button 2</button>
+        <button onclick="alert('Button 3')">Button 3</button>
+        <button onclick="toggleSidebar()">Hide Sidebar</button>
       </div>
     </aside>
 
     <main>
-      <h1>Welcome</h1>
-      <p>This is a fully responsive website interface with a menu and buttons. Resize your browser to see how it adapts!</p>
+      <h1>Welcome!</h1>
+      <p>This is a responsive web interface with:</p>
+      <ul>
+        <li>Collapsible Sidebar</li>
+        <li>Dark Mode Toggle</li>
+        <li>Mobile Hamburger Menu</li>
+        <li>Resizable layout</li>
+      </ul>
     </main>
   </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const darkToggle = document.getElementById('darkModeToggle');
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('hidden');
+    }
+
+    darkToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      darkToggle.textContent =
+        document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    });
+  </script>
 
 </body>
 </html>
