@@ -2,153 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Platformer Game</title>
+  <title>Responsive Web Interface</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { margin: 0; overflow: hidden; background: #222; }
-    canvas { display: block; background: #87ceeb; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Top Menu Bar */
+    header {
+      background-color: #333;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .menu-title {
+      font-size: 1.2rem;
+    }
+
+    nav button {
+      background: #555;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    nav button:hover {
+      background: #777;
+    }
+
+    /* Layout */
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: calc(100% - 60px); /* subtract header height */
+    }
+
+    aside {
+      background: #f4f4f4;
+      padding: 1rem;
+      width: 250px;
+      min-width: 200px;
+    }
+
+    main {
+      flex: 1;
+      padding: 1rem;
+      overflow: auto;
+    }
+
+    /* Responsive behavior */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+      }
+    }
+
+    /* Example buttons */
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .button-group button {
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      background: #008CBA;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .button-group button:hover {
+      background: #005f79;
+    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="400"></canvas>
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
 
-    const gravity = 0.5;
-    const friction = 0.6;
+  <header>
+    <div class="menu-title">My Responsive Interface</div>
+    <nav>
+      <button onclick="alert('Home clicked')">Home</button>
+      <button onclick="alert('About clicked')">About</button>
+      <button onclick="alert('Contact clicked')">Contact</button>
+    </nav>
+  </header>
 
-    const player = {
-      x: 50,
-      y: 0,
-      width: 40,
-      height: 40,
-      color: "red",
-      velX: 0,
-      velY: 0,
-      speed: 5,
-      jumping: false
-    };
+  <div class="container">
+    <aside>
+      <h2>Controls</h2>
+      <div class="button-group">
+        <button onclick="alert('Button 1 clicked')">Button 1</button>
+        <button onclick="alert('Button 2 clicked')">Button 2</button>
+        <button onclick="alert('Button 3 clicked')">Button 3</button>
+      </div>
+    </aside>
 
-    const keys = {};
+    <main>
+      <h1>Welcome</h1>
+      <p>This is a fully responsive website interface with a menu and buttons. Resize your browser to see how it adapts!</p>
+    </main>
+  </div>
 
-    const platforms = [
-      { x: 0, y: 380, width: 800, height: 20 },
-      { x: 100, y: 300, width: 100, height: 10 },
-      { x: 250, y: 250, width: 100, height: 10 },
-      { x: 400, y: 200, width: 100, height: 10 },
-      { x: 550, y: 150, width: 100, height: 10 }
-    ];
-
-    window.addEventListener("keydown", e => keys[e.code] = true);
-    window.addEventListener("keyup", e => keys[e.code] = false);
-
-    function update() {
-      // Horizontal input
-      if (keys["ArrowRight"] && player.velX < player.speed) player.velX++;
-      if (keys["ArrowLeft"] && player.velX > -player.speed) player.velX--;
-
-      // Jumping
-      if (keys["ArrowUp"] && !player.jumping) {
-        player.velY = -10;
-        player.jumping = true;
-      }
-
-      // Apply physics
-      player.velX *= friction;
-      player.velY += gravity;
-
-      player.x += player.velX;
-      player.y += player.velY;
-
-      // Collision with platforms
-      for (let platform of platforms) {
-        checkCollision(player, platform);
-      }
-
-      // Boundaries
-      if (player.x < 0) player.x = 0;
-      if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-      if (player.y > canvas.height) {
-        player.y = 0;
-        player.velY = 0;
-      }
-    }
-
-    function checkCollision(player, platform) {
-      const px = player.x;
-      const py = player.y;
-      const pw = player.width;
-      const ph = player.height;
-      const vx = player.velX;
-      const vy = player.velY;
-
-      const bx = platform.x;
-      const by = platform.y;
-      const bw = platform.width;
-      const bh = platform.height;
-
-      if (
-        px < bx + bw &&
-        px + pw > bx &&
-        py < by + bh &&
-        py + ph > by
-      ) {
-        const overlapX = (px + pw / 2) - (bx + bw / 2);
-        const overlapY = (py + ph / 2) - (by + bh / 2);
-        const halfWidths = (pw + bw) / 2;
-        const halfHeights = (ph + bh) / 2;
-
-        if (Math.abs(overlapX) < halfWidths && Math.abs(overlapY) < halfHeights) {
-          const offsetX = halfWidths - Math.abs(overlapX);
-          const offsetY = halfHeights - Math.abs(overlapY);
-
-          if (offsetX < offsetY) {
-            // Horizontal collision
-            if (overlapX > 0) {
-              player.x += offsetX;
-            } else {
-              player.x -= offsetX;
-            }
-            player.velX = 0;
-          } else {
-            // Vertical collision
-            if (overlapY > 0) {
-              // Hit from below
-              player.y += offsetY;
-              player.velY = 0;
-            } else {
-              // Landed on top
-              player.y -= offsetY;
-              player.velY = 0;
-              player.jumping = false;
-            }
-          }
-        }
-      }
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw player
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-
-      // Draw platforms
-      ctx.fillStyle = "#654321";
-      for (let platform of platforms) {
-        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-      }
-    }
-
-    function gameLoop() {
-      update();
-      draw();
-      requestAnimationFrame(gameLoop);
-    }
-
-    gameLoop();
-  </script>
 </body>
 </html>
-
